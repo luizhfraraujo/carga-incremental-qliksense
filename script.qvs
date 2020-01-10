@@ -1,0 +1,32 @@
+Let vLastUpdatedDate = Text(Date(Reloadtime(),'DD/MM/YYYY'));
+
+trace Data da Última atualização: $(vLastUpdatedDate);
+
+Tarefas:
+Load * Inline [
+"id","descricao","data_criacao","data_alteracao"
+1, "Carregar dados da fonte",08/01/2020,08/01/2020
+2, "Tratar Dados",08/01/2020,08/01/2020
+3, "Salvar Dados em um QVD e carregar em outra tabela","08/01/2020","09/01/2020"
+4, "Inserir um novo dado no QVD","09/01/2020","09/01/2020"
+] WHERE data_alteracao = '$(vLastUpdatedDate)';
+
+// Vamos verificar se existe o QVD Tarefas
+if not isnull(QvdCreateTime('[lib://PathQVDTeste (qlikserver_luiz)/tarefas.qvd]')) then
+    // caso o QVD exista, vamos então concatenar os dados que ja existem mas ignorando 
+    // os registros que estão em nosso load da tabela, ou seja, somente os ids que 
+    // não existirem em nosso QVD que serão carregados.
+
+	Concatenate LOAD * FROM '[lib://PathQVDTeste (qlikserver_luiz)/tarefas.qvd]'(qvd) WHERE NOT EXISTS(id);
+End If;
+
+
+// Armazena as tarefas da tabela concatenados com o QVD no QVD novamente
+STORE Tarefas INTO '[lib://PathQVDTeste (qlikserver_luiz)/tarefas.qvd]';
+
+DROP TABLE Tarefas;
+
+TarefasSalvas:
+LOAD * FROM '[lib://PathQVDTeste (qlikserver_luiz)/tarefas.qvd]'(qvd);
+
+exit Script;
